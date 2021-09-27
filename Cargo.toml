@@ -1,0 +1,37 @@
+[package]
+name = "vanguard"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4"
+color-eyre = "0.5"
+cron = "0.9"
+futures = "0.3"
+rust_decimal = "1.16"
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.2"
+
+[dependencies.atium]
+git = "https://github.com/hasali19/atium"
+
+[dependencies.chromiumoxide]
+version = "0.3"
+default-features = false
+features = ["tokio-runtime"]
+
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[dependencies.sqlx]
+version = "0.5"
+default-features = false
+features = ["decimal", "runtime-actix-rustls", "sqlite"]
+
+[dependencies.tokio]
+version = "1.11"
+features = ["macros", "rt-multi-thread", "sync", "time"]
