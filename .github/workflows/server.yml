@@ -48,7 +48,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
       - build
     steps:
