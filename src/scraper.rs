@@ -103,7 +103,7 @@ pub async fn scrape_investment_data(
 
     for row in rows {
         let name = row
-            .find_element("td.cell-product-name")
+            .find_element("td.cell-product-name .content-product-name")
             .await?
             .call_js_fn("function(){return this.innerText}", false)
             .await?
@@ -112,6 +112,10 @@ pub async fn scrape_investment_data(
             .expect("failed to get cell value");
 
         let name = name.as_str().unwrap();
+
+        if name == "Cash" {
+            continue;
+        }
 
         let values = row
             .find_elements("td.cell-money")
@@ -131,11 +135,7 @@ pub async fn scrape_investment_data(
                 None => return Err(eyre!("failed to get cell value")),
             };
 
-            let value = value
-                .trim()
-                .trim_start_matches('£')
-                .trim_end_matches('%')
-                .replace(',', "");
+            let value = value.trim().replace(['£', '%', ','], "").replace('−', "-");
 
             let value: Decimal = value.parse().expect("failed to parse number");
 
