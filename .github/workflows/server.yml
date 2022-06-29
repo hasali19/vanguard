@@ -81,7 +81,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: vanguard-aarch64-unknown-linux-musl
-          path: target/release
+          path: target/aarch64-unknown-linux-musl/release
 
       - name: Build and push
         uses: docker/build-push-action@v2
@@ -91,6 +91,8 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm64
           push: true
+          build-args: |
+            target=aarch64-unknown-linux-musl
           tags: |
             ghcr.io/hasali19/vanguard:latest
           cache-from: type=local,src=/tmp/.buildx-cache

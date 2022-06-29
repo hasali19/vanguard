@@ -1,8 +1,16 @@
+use std::ops::Deref;
+
+use axum::async_trait;
+use axum::extract::FromRequest;
+use axum::http::StatusCode;
 use color_eyre::eyre;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
 
-pub async fn connect(path: &str) -> eyre::Result<SqlitePool> {
+#[derive(Clone)]
+pub struct Db(SqlitePool);
+
+pub async fn connect(path: &str) -> eyre::Result<Db> {
     let options = SqliteConnectOptions::new()
         .filename(path)
         .create_if_missing(true);
@@ -13,5 +21,27 @@ pub async fn connect(path: &str) -> eyre::Result<SqlitePool> {
         .execute(&pool)
         .await?;
 
-    Ok(pool)
+    Ok(Db(pool))
+}
+
+impl Deref for Db {
+    type Target = SqlitePool;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[async_trait]
+impl<B: Send> FromRequest<B> for Db {
+    type Rejection = (StatusCode, &'static str);
+
+    async fn from_request(
+        req: &mut axum::extract::RequestParts<B>,
+    ) -> Result<Self, Self::Rejection> {
+        req.extensions().get().cloned().ok_or((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Db not found in request extensions",
+        ))
+    }
 }
