@@ -6,7 +6,8 @@ use std::net::SocketAddr;
 use std::str::FromStr;
 use std::time::Duration;
 
-use axum::http::StatusCode;
+use axum::http::header::ACCESS_CONTROL_ALLOW_ORIGIN;
+use axum::http::{HeaderValue, StatusCode};
 use axum::routing::get;
 use axum::{Extension, Json, Router, Server};
 use chrono::Utc;
@@ -14,6 +15,7 @@ use color_eyre::eyre::{self, eyre};
 use cron::Schedule;
 use db::Db;
 use investment::Investment;
+use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
@@ -44,8 +46,15 @@ async fn main() -> eyre::Result<()> {
 
     tokio::spawn(job_runner(schedule, credentials, db.clone()));
 
+    let api = Router::new()
+        .route("/investments", get(get_investments))
+        .layer(SetResponseHeaderLayer::overriding(
+            ACCESS_CONTROL_ALLOW_ORIGIN,
+            HeaderValue::from_static("*"),
+        ));
+
     let app = Router::new()
-        .route("/api/investments", get(get_investments))
+        .nest("/api", api)
         .layer(TraceLayer::new_for_http())
         .layer(Extension(db.clone()));
 

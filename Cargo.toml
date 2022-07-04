@@ -37,7 +37,7 @@ features = ["macros", "rt-multi-thread", "signal", "sync", "time"]
 
 [dependencies.tower-http]
 version = "0.3"
-features = ["trace"]
+features = ["set-header", "trace"]
 
 [dependencies.tracing-subscriber]
 version = "0.3"
