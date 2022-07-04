@@ -8,9 +8,22 @@ use sqlx::{Arguments, FromRow, Row};
 
 use crate::db::Db;
 
+#[derive(Debug)]
+pub struct NewInvestment {
+    pub name: String,
+    pub ongoing_charge: Decimal,
+    pub units: Decimal,
+    pub avg_unit_cost: Decimal,
+    pub last_price: Decimal,
+    pub total_cost: Decimal,
+    pub value: Decimal,
+    pub change: Decimal,
+}
+
 #[derive(Debug, Serialize)]
 pub struct Investment {
     pub name: String,
+    pub scraped_at: String,
     pub ongoing_charge: Decimal,
     pub units: Decimal,
     pub avg_unit_cost: Decimal,
@@ -28,6 +41,7 @@ impl<'r> FromRow<'r, SqliteRow> for Investment {
 
         Ok(Investment {
             name: row.try_get("name")?,
+            scraped_at: row.try_get("scraped_at")?,
             ongoing_charge: get_decimal("ongoing_charge")?,
             units: get_decimal("units")?,
             avg_unit_cost: get_decimal("avg_unit_cost")?,
@@ -44,6 +58,7 @@ impl Investment {
         let sql = "
             SELECT
                 name,
+                datetime(scraped_at, 'unixepoch') AS scraped_at,
                 CAST(ongoing_charge AS TEXT) AS ongoing_charge,
                 CAST(units AS TEXT) AS units,
                 CAST(avg_unit_cost AS TEXT) AS avg_unit_cost,
@@ -57,7 +72,7 @@ impl Investment {
         sqlx::query_as(sql).fetch_all(db.deref()).await
     }
 
-    pub async fn insert(db: &Db, items: Vec<Investment>) -> sqlx::Result<()> {
+    pub async fn insert(db: &Db, items: Vec<NewInvestment>) -> sqlx::Result<()> {
         let insert = "
             INSERT INTO investments (
                 name,

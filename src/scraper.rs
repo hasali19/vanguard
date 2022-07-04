@@ -6,13 +6,13 @@ use futures::{future, StreamExt};
 use rust_decimal::Decimal;
 use tokio::sync::oneshot;
 
-use crate::investment::Investment;
+use crate::investment::NewInvestment;
 
 #[tracing::instrument(skip(username, password))]
 pub async fn scrape_investment_data(
     username: &str,
     password: &str,
-) -> eyre::Result<Vec<Investment>> {
+) -> eyre::Result<Vec<NewInvestment>> {
     let config = BrowserConfig::builder().build().map_err(|e| eyre!(e))?;
 
     tracing::info!("launching browser");
@@ -144,7 +144,7 @@ pub async fn scrape_investment_data(
 
         let mut values = futures::future::join_all(values).await.into_iter();
 
-        let data = Investment {
+        let data = NewInvestment {
             name: name.to_owned(),
             ongoing_charge: values.next().unwrap()?,
             units: values.next().unwrap()?,
